@@ -204,6 +204,23 @@ class TestStaticShell:
         assert "SEBI" not in html
 
 
+class FakeEmbedder:
+    """Stand-in for `Embedder` that records whether the lazy model was touched."""
+
+    def __init__(self) -> None:
+        self.model_touched = False
+        self.encoded: list[str] = []
+
+    @property
+    def model(self) -> object:
+        self.model_touched = True
+        return object()
+
+    def encode(self, texts: list[str]) -> list[list[float]]:
+        self.encoded.extend(texts)
+        return [[0.0] for _ in texts]
+
+
 class TestWarmUp:
     def test_records_success_and_runs_once(
         self, monkeypatch: pytest.MonkeyPatch
@@ -214,7 +231,7 @@ class TestWarmUp:
 
         def fake_get() -> dict[str, object]:
             calls.append(1)
-            return {"embedder": object()}
+            return {"embedder": FakeEmbedder()}
 
         monkeypatch.setattr(server, "get_pipeline", fake_get)
 
@@ -224,6 +241,25 @@ class TestWarmUp:
         assert calls == [1]
         assert server._warm["state"] == "ready"
         assert server._warm["error"] == ""
+
+    def test_forces_the_lazy_encoder_to_load(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The warm-up must touch `.model`, not just build the Embedder.
+
+        `load_embedder()` costs ~0.1s and loads no weights; the first `.model`
+        access is ~22s. A warm-up that stops at construction reports `ready`
+        while the encoder is still cold, and the first real question pays the
+        whole cost on the request path.
+        """
+        monkeypatch.setitem(server._warm, "state", "cold")
+        embedder = FakeEmbedder()
+        monkeypatch.setattr(server, "get_pipeline", lambda: {"embedder": embedder})
+
+        server.warm_pipeline()
+
+        assert embedder.model_touched, "warm-up never accessed the lazy model"
+        assert embedder.encoded == ["warmup"]
 
     def test_records_failure_without_raising(
         self, monkeypatch: pytest.MonkeyPatch
@@ -239,6 +275,24 @@ class TestWarmUp:
 
         assert server._warm["state"] == "failed"
         assert "no weights" in server._warm["error"]
+
+    def test_encoder_failure_is_reported_not_raised(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A broken weight load must surface as `failed`, not a dead container."""
+        monkeypatch.setitem(server._warm, "state", "cold")
+
+        class Exploding(FakeEmbedder):
+            @property
+            def model(self) -> object:
+                raise RuntimeError("corrupt safetensors")
+
+        monkeypatch.setattr(server, "get_pipeline", lambda: {"embedder": Exploding()})
+
+        server.warm_pipeline()
+
+        assert server._warm["state"] == "failed"
+        assert "corrupt safetensors" in server._warm["error"]
 
     def test_concurrent_callers_load_the_model_once(
         self, monkeypatch: pytest.MonkeyPatch

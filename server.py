@@ -37,7 +37,21 @@ async def lifespan(_: FastAPI):
 
     Deliberately not awaited: Render needs the port open quickly to finish its
     health checks, and blocking here would make a cold deploy look dead.
+
+    Torch thread count is pinned here rather than only in `render.yaml` because
+    this service was created from the dashboard, not from the Blueprint, so the
+    OMP/MKL/OPENBLAS variables in the YAML were never applied to it. On a 0.1 CPU
+    instance extra BLAS threads contend for the same fractional core and make the
+    weight load slower, not faster.
     """
+    try:
+        import torch
+
+        torch.set_num_threads(1)
+        torch.set_num_interop_threads(1)
+    except Exception:  # noqa: BLE001 - a perf hint, never worth failing boot over
+        pass
+
     threading.Thread(target=warm_pipeline, name="warm", daemon=True).start()
     yield
 
@@ -107,7 +121,9 @@ def check_session_id(session_id: str) -> str:
 
 
 _pipeline: dict[str, Any] = {}
-_pipeline_lock = threading.Lock()
+# Reentrant because warm_pipeline holds it across the weight load while also
+# calling get_pipeline, which acquires it again.
+_pipeline_lock = threading.RLock()
 _warm: dict[str, str] = {"state": "cold", "error": ""}
 
 
@@ -136,13 +152,24 @@ def get_pipeline() -> dict[str, Any]:
 
 
 def warm_pipeline() -> None:
-    """Force the heavy imports and the model onto the instance, off the request path.
+    """Load the encoder onto the instance at startup, off the request path.
 
-    `Embedder` defers loading sentence-transformers and the MiniLM weights until
-    the first `encode`. Deferring that to the first `/api/chat` means the first
-    person to ask waits for it, on a 0.1 CPU instance, for tens of seconds. Doing
-    it on a background thread at startup overlaps the cost with Render's health
-    probes and with the user reading the page.
+    `Embedder.model` is a lazy property (`src/embed.py`): constructing an
+    Embedder costs about 0.1s and loads no weights at all. Measured in a cold
+    process, `load_embedder()` is 0.10s while the first `.model` access is
+    22.02s, because that is where torch, transformers and the MiniLM weights are
+    actually pulled in. Steady-state encoding is 0.01s, so retrieval itself was
+    never the cost.
+
+    The warm-up used to stop at `get_pipeline()`, which meant it reported `ready`
+    while the encoder was still cold and the first person to ask ate the whole
+    22s, worse on a 0.1 CPU instance. Touching `.model` and encoding one short
+    string moves that cost onto a background thread, overlapping it with Render's
+    health probes and with the user reading the page, and materialises any
+    remaining lazy buffers inside the model.
+
+    The lock is held for the duration so a request arriving mid-warm blocks
+    instead of starting a second load; two MiniLM copies do not fit in 512 MB.
 
     Failures are recorded, not raised: a cold container should still start and
     serve the UI, and the first real request will retry and report the error.
@@ -151,7 +178,10 @@ def warm_pipeline() -> None:
         return
     _warm["state"] = "warming"
     try:
-        get_pipeline()
+        with _pipeline_lock:
+            embedder = get_pipeline()["embedder"]
+            _ = embedder.model
+            embedder.encode(["warmup"])
         _warm["state"] = "ready"
         _warm["error"] = ""
     except Exception as exc:  # noqa: BLE001 - surfaced through /api/health
