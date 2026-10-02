@@ -1,0 +1,20 @@
+source_id,scheme,plan,doc_type,url,enabled,notes
+s01,large_cap,direct,scheme_page,https://www.axismf.com/mutual-funds/equity-funds/axis-large-cap-fund/ef-dg/direct,true,Direct Growth
+s02,large_cap,regular,scheme_page,https://www.axismf.com/mutual-funds/equity-funds/axis-large-cap-fund/ef-gp/regular,true,Regular Growth
+s03,large_cap,n_a,sid,https://www.axismf.com/cms/sites/default/files/Statutory/Axis%20Bluechip%20Fund%20-%20SID.pdf,true,Statutory SID; covers all plans
+s04,flexi_cap,direct,scheme_page,https://www.axismf.com/mutual-funds/equity-funds/axis-flexi-cap-fund/ml-dg/direct,true,Direct Growth
+s05,flexi_cap,regular,scheme_page,https://www.axismf.com/mutual-funds/equity-funds/axis-flexi-cap-fund/ml-gp/regular,true,Regular Growth
+s06,flexi_cap,n_a,sid,https://transact.axismf.com/cms/sites/default/files/Statutory/Axis%20Flexi%20Cap%20Fund%20-%20SID.pdf,true,Statutory SID; covers all plans
+s07,flexi_cap,n_a,factsheet,https://www.axismf.com/cms/sites/default/files/pdf-factsheets/20190204018-Flexi%20Cap%20Fund%20(November%202024)%20DP-Leaflet.pdf,true,Monthly factsheet Nov 2024
+s08,flexi_cap,n_a,factsheet,https://transact.axismf.com/cms/sites/default/files/pdf-factsheets/Axis%20Flexi%20Cap.pdf,true,Monthly factsheet
+s09,elss,direct,scheme_page,https://www.axismf.com/mutual-funds/equity-funds/axis-elss-tax-saver-fund/ts-dg/direct,true,Direct Growth
+s10,elss,regular,scheme_page,https://www.axismf.com/mutual-funds/equity-funds/axis-elss-tax-saver-fund/ts-gp/regular,true,Regular Growth
+s11,elss,n_a,kim,https://www.axismf.com/1/5/464/2258/4302/kim_and_application_form_axis_elss_tax_saver_fund.pdf,true,KIM plus application form
+s12,elss,n_a,sid,https://www.axismf.com/cms/sites/default/files/Statutory/Axis%20ELSS%20Tax%20Saver%20Fund%20-%20SID.pdf,true,Statutory SID; covers all plans
+s13,elss,n_a,efactsheet,https://www.axismf.com/efactsheet/January-2025/Innerpage/ELSS-TAX-SAVER-FUND.html,true,E-factsheet Jan 2025
+s14,midcap,direct,scheme_page,https://www.axismf.com/mutual-funds/equity-funds/axis-mid-cap-fund/mc-dg/direct,true,Direct Growth
+s15,midcap,n_a,third_party,https://www.indmoney.com/mutual-funds/axis-midcap-fund-direct-plan-growth,false,EXCLUDED per decision D5 - third-party aggregator; brief forbids non-AMC sources
+s16,amc_wide,n_a,homepage,https://www.axismf.com/,true,AMC homepage
+s17,amc_wide,n_a,downloads,https://www.axismf.com/downloads,true,Statement and tax doc downloads index
+s18,amc_wide,n_a,factsheet,https://www.axismf.com/1/5/1423/1484/1487/2872/4561/Axis_Fund_Factsheet_July_2026_2412c4ee93.pdf,true,AMC factsheet July 2026
+s19,amc_wide,n_a,factsheet,https://transact.axismf.com/cms/sites/default/files/pdf-factsheets/Axis%20Fund%20Factsheet%20March%202026.pdf,true,AMC factsheet March 2026

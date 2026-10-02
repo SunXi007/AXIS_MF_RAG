@@ -1,0 +1,56 @@
+# Direct dependencies for P0-P1 (fetch + extract)
+httpx==0.28.1
+pymupdf==1.28.2
+trafilatura==2.2.0
+beautifulsoup4==4.15.0
+lxml==6.1.3
+python-dotenv==1.2.4
+
+# Test
+pytest==9.1.1
+
+# P3 - embedding and vector store
+chromadb==1.5.9
+sentence-transformers==6.1.0
+tqdm==4.70.1
+
+# P5 - generation
+groq==1.7.0
+
+# P6 - UI
+streamlit==1.64.0
+
+# Transitive dependencies of the above, pinned for reproducibility.
+# NOTE (P6): this block predates streamlit and sentence-transformers, whose own
+# trees (torch, numpy, transformers, pyarrow, altair, ...) are resolved by pip
+# rather than pinned here. Regenerate this block with `pip freeze` if you need a
+# byte-exact image; hand-editing it risks conflicting with streamlit's resolver.
+anyio==4.15.1
+babel==2.18.0
+certifi==2026.7.22
+charset-normalizer==3.5.2
+colorama==0.4.6
+courlan==1.4.0
+dateparser==1.4.3
+distro==1.9.0
+h11==0.16.0
+htmldate==1.11.0
+httpcore==1.0.9
+idna==3.20
+iniconfig==2.3.0
+jusText==3.0.2
+lxml_html_clean==0.4.5
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0
+python-dateutil==2.9.0.post0
+pytz==2026.4
+regex==2026.9.29
+six==1.17.0
+sniffio==1.3.1
+soupsieve==2.10
+tld==0.13.2
+tzdata==2026.4
+tzlocal==5.4.4
+typing-extensions==4.16.0
+urllib3==2.8.0

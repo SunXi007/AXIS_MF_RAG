@@ -1,0 +1,18 @@
+.env
+.env.*
+!.env.example
+data/
+chroma/
+artifacts/
+models/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.DS_Store
+*.egg-info/
+
+# Stray extensionless credential file that held a live GROQ_API_KEY; ignored as a
+# safety net because it has no extension for the pattern above to catch.
+Untitled

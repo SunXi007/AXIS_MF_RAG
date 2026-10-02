@@ -1,0 +1,10 @@
+{"id": "p01", "question": "What is the exit load on the Axis Large Cap Fund Direct plan?", "chunk_ids": ["s03-c051", "s03-c238", "s01-c017"], "expected": "Exit Load NIL / refer to SID Point XI"}
+{"id": "p02", "question": "What is the exit load on the Axis Large Cap Fund Regular plan?", "chunk_ids": ["s03-c051", "s03-c238", "s02-c016"], "expected": "Exit Load NIL / refer to SID Point XI"}
+{"id": "p03", "question": "What is the exit load on the Axis ELSS Tax Saver Fund?", "chunk_ids": ["s09-c018"], "expected": "Exit Load N/A", "note": "known miss: the scheme-page chunk carrying Exit Load N/A does not reach top-5"}
+{"id": "p04", "question": "What is the lock-in period of the Axis ELSS Tax Saver Fund?", "chunk_ids": ["s09-c011", "s09-c029", "s10-c028", "s09-c000", "s09-c007"], "expected": "statutory lock-in of three years"}
+{"id": "p05", "question": "What is the minimum lump sum investment for the Axis ELSS Tax Saver Fund?", "chunk_ids": ["s12-c047", "s09-c018"], "expected": "10,000 for both Regular and Direct"}
+{"id": "p06", "question": "What is the expense ratio of the Axis Flexi Cap Fund Direct plan?", "chunk_ids": ["s06-c224", "s04-c000"], "expected": "expense ratio definition and value"}
+{"id": "p07", "question": "What is the benchmark of the Axis Flexi Cap Fund?", "chunk_ids": ["s06-c194", "s04-c000"], "expected": "benchmark named in key facts"}
+{"id": "p08", "question": "What is the risk profile of the Axis Flexi Cap Fund Direct plan?", "chunk_ids": ["s04-c023", "s04-c001"], "expected": "very high risk rating as per the riskometer"}
+{"id": "p09", "question": "What is the minimum investment amount for the Axis Midcap Fund Direct plan?", "chunk_ids": ["s14-c018"], "expected": "Minimum Investment Amount"}
+{"id": "p10", "question": "How do I download an account statement?", "chunk_ids": ["s16-c008"], "expected": "accountstatement service link", "note": "known miss: the homepage nav chunk does not embed well; off-topic-adjacent and borderline"}
