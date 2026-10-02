@@ -15,7 +15,6 @@ const el = {
   input: document.getElementById('chat-input'),
   send: document.getElementById('send-btn'),
   reset: document.getElementById('reset-btn'),
-  memory: document.getElementById('memory-label'),
   healthPill: document.getElementById('health-pill'),
   disclaimer: document.getElementById('disclaimer'),
   brandSub: document.getElementById('brand-sub'),
@@ -30,8 +29,6 @@ const el = {
   historyEmpty: document.getElementById('history-empty'),
   historyNote: document.getElementById('history-note'),
   aboutDisclaimer: document.getElementById('about-disclaimer'),
-  aboutMemory: document.getElementById('about-memory'),
-  aboutMemory2: document.getElementById('about-memory-2'),
   explorer: document.getElementById('explorer'),
   catPills: document.getElementById('cat-pills'),
   fundCard: document.getElementById('fund-card'),
@@ -341,15 +338,6 @@ function renderAnswer(data) {
     bubble.appendChild(provenanceBlock(data));
   }
 
-  if (data.latency_ms && Object.keys(data.latency_ms).length) {
-    const lat = document.createElement('div');
-    lat.className = 'latency';
-    lat.textContent = Object.entries(data.latency_ms)
-      .map(([k, v]) => `${k} ${v}ms`)
-      .join(' · ');
-    bubble.appendChild(lat);
-  }
-
   turn.appendChild(bubble);
   el.stream.appendChild(turn);
   scrollDown();
@@ -372,7 +360,6 @@ function scrollDown() {
 
 function clearStream() {
   el.stream.innerHTML = '';
-  el.memory.textContent = 'no history';
   showExplorer(true);
   closeCategory();
 }
@@ -412,7 +399,6 @@ async function ask(question) {
       return;
     }
     renderAnswer(payload);
-    if (payload.memory) el.memory.textContent = payload.memory;
     if (payload.template_id !== 'ERROR') recordHistory(question, payload);
   } catch (err) {
     placeholder.remove();
@@ -620,8 +606,6 @@ async function boot() {
     const cfg = await configRes.json();
     el.disclaimer.textContent = cfg.disclaimer || '';
     el.aboutDisclaimer.textContent = cfg.disclaimer || '';
-    el.aboutMemory.textContent = `${cfg.memory_window} messages`;
-    el.aboutMemory2.textContent = String(cfg.memory_window);
     state.categories = cfg.categories || [];
     renderCategories();
     renderSuggestions(cfg.suggestions);

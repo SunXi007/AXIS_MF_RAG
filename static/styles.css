@@ -1,37 +1,38 @@
 /* Axis MF Facts Chatbot
-   Tokens mirror Design/.../obsidian_wealth_ai/DESIGN.md: obsidian canvas, stepped
-   slate containers, three levels of frosted glass elevation, cobalt/emerald
-   accents, Plus Jakarta Sans for headings and Inter for body and figures. */
+   Monochrome obsidian: a pure-black canvas with white text and greyscale
+   surfaces. All chromatic accents (cobalt, emerald, indigo, amber) have been
+   removed, so hierarchy is carried by white opacity, border weight and surface
+   elevation alone. Plus Jakarta Sans for headings, Inter for body and figures. */
 
 :root {
-  --canvas: #0B0F19;
-  --slate: #111827;
-  --elevated: #1A2234;
-  --container: #1b2025;
-  --container-low: #171c21;
-  --container-high: #252a30;
-  --container-highest: #30353b;
+  --canvas: #000000;
+  --slate: #0A0A0A;
+  --elevated: #141414;
+  --container: #161616;
+  --container-low: #0F0F0F;
+  --container-high: #1F1F1F;
+  --container-highest: #2E2E2E;
 
-  --text-primary: #F9FAFB;
-  --text-muted: #9CA3AF;
-  --on-surface: #dee3ea;
-  --on-surface-variant: #c2c6d6;
+  --text-primary: #FFFFFF;
+  --text-muted: #A3A3A3;
+  --on-surface: #E5E5E5;
+  --on-surface-variant: #C7C7C7;
 
-  --primary: #adc6ff;
-  --primary-container: #4d8eff;
-  --on-primary: #002e6a;
-  --secondary: #4edea3;
-  --secondary-container: #00a572;
-  --secondary-fixed-dim: #4edea3;
-  --tertiary: #c0c1ff;
-  --tertiary-container: #8083ff;
-  --amber: #F59E0B;
-  --loss: #EF4444;
-  --error-container: #93000a;
-  --on-error-container: #ffdad6;
+  --primary: #FFFFFF;
+  --primary-container: #FFFFFF;
+  --on-primary: #000000;
+  --secondary: #E5E5E5;
+  --secondary-container: #D4D4D4;
+  --secondary-fixed-dim: #E5E5E5;
+  --tertiary: #D4D4D4;
+  --tertiary-container: #A3A3A3;
+  --amber: #D4D4D4;
+  --loss: #E5E5E5;
+  --error-container: #1A1A1A;
+  --on-error-container: #FFFFFF;
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(59, 130, 246, 0.35);
+  --border-subtle: rgba(255, 255, 255, 0.10);
+  --border-glow: rgba(255, 255, 255, 0.28);
 
   --r-sm: 0.25rem;
   --r-md: 0.5rem;
@@ -105,7 +106,7 @@ body {
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
-.new-chat:hover { background: var(--container-high); border-color: rgba(77, 142, 255, 0.35); }
+.new-chat:hover { background: var(--container-high); border-color: rgba(255, 255, 255, 0.30); }
 .new-chat:active { transform: scale(0.985); }
 .new-chat:disabled { opacity: 0.5; cursor: not-allowed; }
 .new-chat .material-symbols-outlined { font-size: 18px; color: var(--primary-container); }
@@ -153,8 +154,8 @@ body {
   overflow: hidden;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
-.hist details:hover { border-color: rgba(77, 142, 255, 0.30); }
-.hist details[open] { background: var(--container); border-color: rgba(77, 142, 255, 0.35); }
+.hist details:hover { border-color: rgba(255, 255, 255, 0.22); }
+.hist details[open] { background: var(--container); border-color: rgba(255, 255, 255, 0.30); }
 
 .hist summary {
   cursor: pointer; list-style: none;
@@ -214,7 +215,7 @@ body {
 
 .scrim {
   position: fixed; inset: 0; z-index: 55;
-  background: rgba(4, 7, 12, 0.62);
+  background: rgba(0, 0, 0, 0.70);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
 }
@@ -235,7 +236,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(11, 15, 25, 0.82);
+  background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
@@ -275,11 +276,12 @@ body {
   color: var(--on-surface-variant);
 }
 
-.pill-live { background: rgba(78, 222, 163, 0.10); border-color: rgba(78, 222, 163, 0.30); color: var(--secondary); }
-.pill-down { background: rgba(147, 0, 10, 0.35); border-color: rgba(255, 218, 214, 0.25); color: var(--on-error-container); }
-.pill-accent { background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.30); color: #3B82F6; }
-.pill-amber { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.30); color: var(--amber); }
-.pill-ok { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.28); color: #34D399; }
+/* Status is carried by border weight and fill, not hue. */
+.pill-live { background: rgba(255, 255, 255, 0.10); border-color: rgba(255, 255, 255, 0.40); color: #FFFFFF; }
+.pill-down { background: rgba(255, 255, 255, 0.20); border-color: rgba(255, 255, 255, 0.60); color: #FFFFFF; }
+.pill-accent { background: rgba(255, 255, 255, 0.10); border-color: rgba(255, 255, 255, 0.30); color: #FFFFFF; }
+.pill-amber { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.26); color: var(--on-surface-variant); }
+.pill-ok { background: rgba(255, 255, 255, 0.10); border-color: rgba(255, 255, 255, 0.30); color: #FFFFFF; }
 
 /* ---------- guardrail banner ---------- */
 
@@ -288,7 +290,7 @@ body {
   padding: 0.75rem 1rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   /* Level 1 glass */
-  background: rgba(17, 24, 39, 0.75);
+  background: rgba(8, 8, 8, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -300,7 +302,7 @@ body {
 .banner-icon {
   width: 1.75rem; height: 1.75rem; border-radius: var(--r-md);
   display: grid; place-items: center; flex-shrink: 0;
-  background: rgba(77, 142, 255, 0.12);
+  background: rgba(255, 255, 255, 0.10);
   color: var(--primary-container);
 }
 .banner-icon .material-symbols-outlined { font-size: 18px; }
@@ -324,14 +326,14 @@ body {
 .turn.user { align-self: flex-end; align-items: flex-end; }
 .turn.bot { align-self: flex-start; width: 100%; }
 
-/* User Messages: "crisp obsidian elevated surface with electric blue right-accent
-   indicator", 16px rounding with a 4px anchor corner on the originating side. */
+/* User Messages: an elevated charcoal surface with a white right-accent
+   indicator, 16px rounding with a 4px anchor corner on the originating side. */
 .bubble-user {
-  background: rgba(26, 34, 52, 0.85);
+  background: rgba(20, 20, 20, 0.90);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-right: 3px solid #3B82F6;
+  border-right: 3px solid #FFFFFF;
   border-radius: var(--r-xl) var(--r-xl) var(--r-sm) var(--r-xl);
   padding: 0.75rem 1rem;
   box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5);
@@ -344,8 +346,8 @@ body {
 .scope-note {
   font-size: 0.6875rem;
   color: var(--primary);
-  background: rgba(77, 142, 255, 0.10);
-  border: 1px solid rgba(77, 142, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--r-full);
   padding: 0.1875rem 0.5rem;
   margin-top: 0.125rem;
@@ -356,17 +358,17 @@ body {
   width: 1.5rem; height: 1.5rem; border-radius: var(--r-full);
   display: grid; place-items: center;
   background: var(--primary-container); color: var(--on-primary);
-  box-shadow: 0 4px 12px -2px rgba(77, 142, 255, 0.5);
+  box-shadow: 0 4px 12px -2px rgba(255, 255, 255, 0.28);
 }
 .bot-avatar .material-symbols-outlined { font-size: 14px; }
 .bot-name { font-family: var(--font-head); font-size: 0.875rem; font-weight: 600; }
 .bot-tag { padding: 0.125rem 0.375rem; border-radius: var(--r-sm); background: var(--container-highest); color: var(--text-muted); font-size: 0.6875rem; font-weight: 600; }
 
-/* Assistant Messages: rgba(26,34,52,0.65) glass with a subtle indigo ambient
-   gradient border, 16px rounding and a 4px anchor corner top-left. */
+/* Assistant Messages: charcoal glass with a subtle white ambient gradient
+   border, 16px rounding and a 4px anchor corner top-left. */
 .bubble-bot {
   position: relative;
-  background: rgba(26, 34, 52, 0.65);
+  background: rgba(18, 18, 18, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid transparent;
@@ -382,7 +384,7 @@ body {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(59, 130, 246, 0.10) 45%, rgba(16, 185, 129, 0.14));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06) 45%, rgba(255, 255, 255, 0.12));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -393,13 +395,13 @@ body {
 
 .citation { display: flex; flex-direction: column; gap: 0.125rem; }
 .citation a { color: var(--primary); font-size: 0.8125rem; font-weight: 600; text-decoration: none; word-break: break-word; }
-.citation a:hover { color: #d8e2ff; text-decoration: underline; }
+.citation a:hover { color: #FFFFFF; text-decoration: underline; }
 .citation small { font-size: 0.6875rem; color: var(--text-muted); }
 
 .notice {
   display: flex; gap: 0.625rem; align-items: flex-start;
   padding: 0.75rem; border-radius: var(--r-xl);
-  background: rgba(37, 42, 48, 0.60);
+  background: rgba(26, 26, 26, 0.60);
   border: 1px solid var(--border-subtle);
 }
 .notice .material-symbols-outlined { font-size: 18px; color: var(--amber); flex-shrink: 0; margin-top: 0.125rem; }
@@ -411,8 +413,8 @@ body {
 .rewrite {
   display: flex; gap: 0.5rem; align-items: flex-start;
   padding: 0.625rem 0.75rem; border-radius: var(--r-lg);
-  background: rgba(77, 142, 255, 0.07);
-  border: 1px solid rgba(77, 142, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   font-size: 0.75rem; color: var(--on-surface-variant); line-height: 1.45;
 }
 .rewrite .material-symbols-outlined { font-size: 16px; color: var(--primary-container); flex-shrink: 0; margin-top: 0.125rem; }
@@ -431,7 +433,7 @@ body {
 .prov-list { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 0.25rem; }
 
 .prov-item {
-  background: rgba(23, 28, 33, 0.70);
+  background: rgba(10, 10, 10, 0.70);
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-lg);
   padding: 0.625rem 0.75rem;
@@ -445,14 +447,12 @@ body {
 .score { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.6875rem; font-weight: 700; color: var(--secondary); }
 .score .material-symbols-outlined { font-size: 14px; }
 
-.latency { font-size: 0.6875rem; color: var(--text-muted); }
-
 /* ---------- greeting + fund quick filters ----------
-   DESIGN.md Shapes: interactive badges and chips are fully pill-shaped to read
-   as quick filters ("Large Cap", "ELSS Tax Saver"). So the catalogue is a
-   scrolling pill row and the selected fund resolves into a single Level 2 glass
-   card, not a grid of report cards: we hold no star ratings, CAGR or AUM, and
-   rendering empty metrics would misrepresent the corpus. */
+   Interactive badges and chips are fully pill-shaped so a fund reads as a quick
+   filter ("Large Cap", "ELSS Tax Saver"). The catalogue is a scrolling pill row
+   and the selected fund resolves into a single elevated card, not a grid of
+   report cards: we hold no star ratings, CAGR or AUM, and rendering empty
+   metrics would misrepresent the corpus. */
 
 .explorer { padding: 1.5rem 0 1rem; display: flex; flex-direction: column; gap: 1rem; }
 .explorer[hidden] { display: none; }
@@ -462,9 +462,9 @@ body {
 .hero-chip {
   display: inline-flex; align-items: center; gap: 0.4375rem; align-self: flex-start;
   padding: 0.375rem 0.75rem; border-radius: var(--r-full);
-  background: rgba(16, 185, 129, 0.10);
-  border: 1px solid rgba(16, 185, 129, 0.28);
-  color: #34D399;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: #FFFFFF;
   font-size: 0.75rem; font-weight: 600;
 }
 .hero-chip .material-symbols-outlined { font-size: 16px; }
@@ -487,14 +487,13 @@ body {
 }
 .filter-label .material-symbols-outlined { font-size: 15px; }
 
-/* ---------- selected fund: Level 2 glass ---------- */
+/* ---------- selected fund: elevated glass ---------- */
 
 .fund-card {
   display: flex; flex-direction: column; gap: 1rem;
   padding: 1.25rem;
   border-radius: var(--r-xl);
-  /* Level 2: rgba(26,34,52,0.85), blur(16px), 1px rgba(255,255,255,0.12) */
-  background: rgba(26, 34, 52, 0.85);
+  background: rgba(18, 18, 18, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -507,9 +506,9 @@ body {
 .fund-icon {
   width: 2.75rem; height: 2.75rem; border-radius: var(--r-lg);
   display: grid; place-items: center; flex-shrink: 0;
-  background: rgba(59, 130, 246, 0.14);
-  border: 1px solid rgba(59, 130, 246, 0.28);
-  color: #3B82F6;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #FFFFFF;
 }
 .fund-icon .material-symbols-outlined { font-size: 24px; }
 
@@ -531,11 +530,11 @@ body {
   padding: 0.375rem 0.625rem;
   border-radius: var(--r-full);
   /* Level 1 glass */
-  background: rgba(17, 24, 39, 0.75);
+  background: rgba(8, 8, 8, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 0.6875rem; font-weight: 600; color: var(--on-surface-variant);
 }
-.trust-badge .material-symbols-outlined { font-size: 15px; color: #34D399; }
+.trust-badge .material-symbols-outlined { font-size: 15px; color: #FFFFFF; }
 
 /* ---------- active fund context chip ---------- */
 
@@ -546,8 +545,8 @@ body {
   display: inline-flex; align-items: center; gap: 0.375rem;
   padding: 0.3125rem 0.625rem;
   border-radius: var(--r-full);
-  background: rgba(77, 142, 255, 0.12);
-  border: 1px solid rgba(77, 142, 255, 0.30);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: var(--primary);
   font-size: 0.6875rem; font-weight: 600;
 }
@@ -574,18 +573,37 @@ body {
 .pill-row { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; scrollbar-width: none; }
 .pill-row::-webkit-scrollbar { display: none; }
 
-/* Primary Button: electric cobalt #3B82F6, white bold text, 8px radius, active
-   scale 0.98 and a 4px radial blue drop glow. */
-.send-btn {
-  background: #3B82F6;
-  color: #FFFFFF;
-  border-radius: var(--r-md);
-  box-shadow: 0 4px 14px -2px rgba(59, 130, 246, 0.55);
+/* Suggested questions read as a vertical list: they are the main way into the
+   conversation, so each one gets a full-width row instead of scrolling off the
+   edge of a horizontal strip. */
+#suggestion-row {
+  flex-direction: column;
+  align-items: stretch;
+  overflow-x: visible;
+  padding-bottom: 0;
 }
-.send-btn:hover { background: #2F6FE0; }
+#suggestion-row .chip { width: 100%; max-width: none; align-items: flex-start; }
+#suggestion-row .chip .material-symbols-outlined { margin-top: 0.0625rem; }
+#suggestion-row .chip .material-symbols-outlined + span {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Primary Button: a solid white surface with a black glyph, inverted so it is
+   the only element on the page that flips the palette. 8px radius, active scale
+   0.98 and a soft white halo. */
+.send-btn {
+  background: #FFFFFF;
+  color: #000000;
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 14px -2px rgba(255, 255, 255, 0.30);
+}
+.send-btn:hover { background: #E5E5E5; }
 .send-btn:active { transform: scale(0.98); }
 
-/* Secondary / actionable chip: ghost fill, 1px translucent border, cobalt on hover. */
+/* Secondary / actionable chip: ghost fill, 1px translucent border, brighter
+   fill and border on hover. */
 .chip {
   flex-shrink: 0;
   padding: 0.5rem 0.875rem;
@@ -602,23 +620,23 @@ body {
   text-align: left;
   transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
 }
-.chip:hover { background: rgba(59, 130, 246, 0.10); border-color: rgba(59, 130, 246, 0.45); }
+.chip:hover { background: rgba(255, 255, 255, 0.10); border-color: rgba(255, 255, 255, 0.45); }
 .chip:active { transform: scale(0.98); }
-.chip .material-symbols-outlined { font-size: 15px; color: #3B82F6; }
-.chip.chip-b .material-symbols-outlined { color: #10B981; }
-.chip.chip-c .material-symbols-outlined { color: var(--amber); }
-.chip.chip-d .material-symbols-outlined { color: #6366F1; }
+.chip .material-symbols-outlined { font-size: 15px; color: #FFFFFF; }
+.chip.chip-b .material-symbols-outlined { color: #E5E5E5; }
+.chip.chip-c .material-symbols-outlined { color: #C7C7C7; }
+.chip.chip-d .material-symbols-outlined { color: #A3A3A3; }
 .chip .material-symbols-outlined + span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .chip.is-active {
-  background: rgba(59, 130, 246, 0.16);
-  border-color: #3B82F6;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #FFFFFF;
   color: #FFFFFF;
 }
 .chip.is-active .material-symbols-outlined { color: #FFFFFF; }
 
 /* A starter question is a conversational shortcut, not a filter, so it reads as
-   an outward arrow and stays on the cobalt accent. */
+   an outward arrow. */
 .chip-q { max-width: 26rem; }
 
 /* ---------- composer ---------- */
@@ -626,13 +644,13 @@ body {
 .composer-dock {
   position: fixed; left: var(--side-w); right: 0; bottom: 0; z-index: 40;
   padding: 0.75rem 0 1rem;
-  background: linear-gradient(to top, var(--canvas) 55%, rgba(11, 15, 25, 0));
+  background: linear-gradient(to top, var(--canvas) 55%, rgba(0, 0, 0, 0));
 }
 
 .composer {
   display: flex; align-items: center; gap: 0.5rem;
   padding: 0.375rem;
-  background: rgba(26, 34, 52, 0.95);
+  background: rgba(12, 12, 12, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-glow);
@@ -658,7 +676,7 @@ body {
 }
 .icon-btn { background: var(--container); color: var(--text-muted); }
 .icon-btn:hover { background: var(--container-highest); color: var(--text-primary); }
-.send-btn { background: var(--primary-container); color: var(--on-primary); box-shadow: 0 4px 14px -2px rgba(77, 142, 255, 0.55); }
+.send-btn { background: var(--primary-container); color: var(--on-primary); box-shadow: 0 4px 14px -2px rgba(255, 255, 255, 0.30); }
 .send-btn:hover { background: var(--primary); }
 .icon-btn:active { transform: scale(0.95); }
 .send-btn:disabled, .icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
