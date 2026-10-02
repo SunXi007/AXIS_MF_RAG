@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Axis MF Facts Chatbot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <span class="brand-mark"><span class="material-symbols-outlined">verified</span></span>
+      <div class="brand-text">
+        <strong>Axis MF Facts Assistant</strong>
+        <span id="brand-sub">Grounded in official Axis Mutual Fund pages</span>
+      </div>
+    </div>
+    <span class="pill pill-live" id="health-pill">checking</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="banner" aria-label="Guardrails and sourcing">
+    <div class="banner-left">
+      <span class="banner-icon"><span class="material-symbols-outlined">shield</span></span>
+      <div class="banner-text">
+        <strong>Facts only &middot; no investment advice</strong>
+        <span>Every answer is quoted from official Axis MF pages and statutory documents.</span>
+      </div>
+    </div>
+    <span class="pill" id="model-pill">&mdash;</span>
+  </section>
+
+  <div class="disclaimer" id="disclaimer"></div>
+
+  <section id="stream" class="stream" aria-live="polite" aria-label="Conversation"></section>
+
+  <section class="suggestions" id="suggestions" aria-label="Suggested questions">
+    <div class="suggestions-label">
+      <span class="material-symbols-outlined">tips_and_updates</span>
+      <span>Suggested questions</span>
+    </div>
+    <div class="pill-row" id="suggestion-row"></div>
+  </section>
+
+</main>
+
+<div class="composer-dock">
+  <form class="wrap" id="composer">
+    <div class="composer">
+      <input id="chat-input" type="text" autocomplete="off" maxlength="2000"
+             placeholder="Ask about exit loads, fees, risk or ELSS lock-in..." />
+      <button type="button" class="icon-btn" id="reset-btn" title="Clear conversation"
+              aria-label="Clear conversation">
+        <span class="material-symbols-outlined">restart_alt</span>
+      </button>
+      <button type="submit" class="send-btn" id="send-btn" aria-label="Send">
+        <span class="material-symbols-outlined">arrow_upward</span>
+      </button>
+    </div>
+    <div class="composer-meta">
+      <span id="memory-label">no history</span>
+      <span class="dot">&bull;</span>
+      <span>No advice, no forecasts, no performance claims.</span>
+    </div>
+  </form>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

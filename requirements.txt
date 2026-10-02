@@ -25,8 +25,10 @@ torch==2.14.1
 # P5 - generation
 groq==1.7.0
 
-# P6 - UI
-streamlit==1.64.0
+# P6 - web UI. FastAPI serves the HTML/CSS/JS shell; uvicorn is the ASGI server
+# Render boots. No Streamlit: the UI is hand-authored against the design tokens.
+fastapi==0.142.2
+uvicorn==0.54.0
 
 # Transitive dependencies of the above, pinned for reproducibility.
 # NOTE (P6): this block predates streamlit and sentence-transformers, whose own

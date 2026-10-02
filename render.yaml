@@ -4,6 +4,11 @@
 # which is required: every path in config.py resolves from ROOT_DIR, and the
 # build runs `python -m src.ingest`. Setting rootDir to `src` makes that module
 # unimportable and fails the build with "No module named src.ingest".
+#
+# `--workers 1` is required, not a default: each worker would load its own copy
+# of MiniLM, and on a 512 MB instance two workers exhaust memory immediately.
+# Session memory lives in the worker process, so more than one worker would also
+# split a browser session across processes and break follow-up resolution.
 
 services:
   - type: web
@@ -22,8 +27,8 @@ services:
       pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
       && pip install -r requirements.txt
       && python -m src.ingest
-    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
-    healthCheckPath: /_stcore/health
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /api/health
 
     autoDeploy: true
 

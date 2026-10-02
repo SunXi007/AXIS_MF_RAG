@@ -97,6 +97,12 @@ PII_LOG_RAW = os.getenv("AXIS_PII_LOG_RAW", "false").lower() == "true"
 # Rolling conversation window, in messages (user + assistant turns combined).
 MEMORY_MAX_MESSAGES = int(os.getenv("AXIS_MEMORY_MAX_MESSAGES", "10"))
 
+# The HTTP layer keeps one rolling window per browser session. Both bounds exist
+# because that state lives in the worker process, so without them a long-lived
+# container would grow until it was OOM-killed.
+WEB_MAX_SESSIONS = int(os.getenv("AXIS_WEB_MAX_SESSIONS", "64"))
+WEB_SESSION_TTL_S = int(os.getenv("AXIS_WEB_SESSION_TTL_S", "1800"))
+
 assert PII_LOG_RAW is False, "PII_LOG_RAW must stay False; raw PII is never logged (NFR-3)"
 
 SCHEMES = ("large_cap", "flexi_cap", "elss", "midcap", "amc_wide")
