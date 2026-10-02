@@ -27,7 +27,13 @@ services:
       pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
       && pip install -r requirements.txt
       && python -m src.ingest
-    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1
+    # `python -m uvicorn`, not a bare `uvicorn`. The bare console script depends on
+    # the venv's bin/ being on PATH, and a build cached from before the FastAPI
+    # migration (Streamlit era, no uvicorn in requirements.txt) yields exactly
+    # "bash: line 1: uvicorn: command not found" at runtime. Invoking the module
+    # runs it from the interpreter Render already launched, so it cannot be lost
+    # from PATH, and it fails loudly with a real traceback if uvicorn is absent.
+    startCommand: python -m uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1
     healthCheckPath: /api/health
 
     autoDeploy: true
