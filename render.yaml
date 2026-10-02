@@ -10,9 +10,13 @@ services:
     name: axis-mf-rag
     runtime: python
 
-    # The free tier's 512 MB cannot hold torch + chromadb while embedding 5,415
-    # chunks; the build gets OOM-killed and Render reports only "Build failed".
-    plan: starter
+    # Free tier: $0, 512 MB RAM, 0.1 CPU. The risk is the build, not the bill:
+    # python -m src.ingest holds torch plus MiniLM in memory while embedding 5,415
+    # chunks, and 512 MB is tight. If the build is OOM-killed, Render reports only
+    # "Build failed" with no traceback. Fixing it means plan: starter ($7/mo, 512 MB,
+    # 0.5 CPU) or a prebuilt committed index. The env vars below narrow the
+    # processes so the free tier has the best chance of succeeding.
+    plan: free
 
     buildCommand: >-
       pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
@@ -27,6 +31,23 @@ services:
       # cp312 matches the manylinux wheels in the build log.
       - key: PYTHON_VERSION
         value: 3.12.8
+
+      # Keep native maths and tokenizers single-threaded. Every thread reserves
+      # its own stack and arena, so this is the cheapest way to cut peak RSS on a
+      # 512 MB instance during the embed pass.
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"
+      - key: TOKENIZERS_PARALLELISM
+        value: "false"
+
+      # 5,415 chunks are embedded one batch at a time, so peak memory tracks this
+      # value. Dropped from the config.py default of 32 for the free tier only.
+      - key: AXIS_EMBED_BATCH_SIZE
+        value: "8"
 
       # llama-3.1-8b-instant, named in docs/implementation.md, is retired from
       # the Groq catalogue and 404s. gpt-oss-20b is the working substitute.
