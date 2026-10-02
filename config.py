@@ -21,6 +21,13 @@ CHROMA_DIR = Path(os.getenv("AXIS_CHROMA_DIR", ROOT_DIR / "chroma"))
 EVAL_DIR = Path(os.getenv("AXIS_EVAL_DIR", ROOT_DIR / "eval"))
 MODELS_DIR = Path(os.getenv("AXIS_MODELS_DIR", ROOT_DIR / "models"))
 
+# Pin the HuggingFace cache inside the project. Left unset, sentence-transformers
+# resolves weights through $HOME/.cache/huggingface, which is not guaranteed to be
+# part of the deployed filesystem: a cold start then re-downloads MiniLM instead of
+# loading it, adding tens of seconds to the first answer. config is imported before
+# sentence_transformers anywhere in the tree, so this setdefault lands in time.
+os.environ.setdefault("HF_HOME", str(MODELS_DIR / "hf"))
+
 SOURCES_CSV = Path(os.getenv("AXIS_SOURCES_CSV", ROOT_DIR / "sources.csv"))
 CHUNKS_TXT = ARTIFACTS_DIR / "chunks.txt"
 CHUNKS_JSON = ARTIFACTS_DIR / "chunks.json"
@@ -107,6 +114,73 @@ assert PII_LOG_RAW is False, "PII_LOG_RAW must stay False; raw PII is never logg
 
 SCHEMES = ("large_cap", "flexi_cap", "elss", "midcap", "amc_wide")
 PLANS = ("direct", "regular", "n_a")
+
+# Category browser for the web UI. Every entry maps to a scheme that is actually
+# indexed in `sources.csv`, because a category the corpus cannot answer is worse
+# than no category: the user gets NOT_FOUND and concludes the bot is broken. The
+# starter questions are likewise restricted to facts the scheme pages, SIDs and
+# factsheets state, so clicking one can succeed.
+FUND_CATALOG = (
+    {
+        "scheme": "large_cap",
+        "category": "Large Cap",
+        "icon": "trending_up",
+        "tagline": "Bluechip equity, direct and regular plans.",
+        "starters": (
+            "What is the exit load on the Axis Large Cap Regular plan?",
+            "What is the expense ratio of the Axis Large Cap Direct plan?",
+            "What is the benchmark and risk profile of the Axis Large Cap Fund?",
+            "What is the minimum investment for the Axis Large Cap Fund?",
+        ),
+    },
+    {
+        "scheme": "flexi_cap",
+        "category": "Flexi Cap",
+        "icon": "donut_large",
+        "tagline": "Multi-cap mandate with the broadest holdings list.",
+        "starters": (
+            "What is the exit load on the Axis Flexi Cap Direct plan?",
+            "What are the top holdings of the Axis Flexi Cap Fund?",
+            "What is the expense ratio of the Axis Flexi Cap Regular plan?",
+            "What is the benchmark index of the Axis Flexi Cap Fund?",
+        ),
+    },
+    {
+        "scheme": "elss",
+        "category": "ELSS Tax Saver",
+        "icon": "savings",
+        "tagline": "Section 80C tax saver with a three-year lock-in.",
+        "starters": (
+            "What is the lock-in period for the Axis ELSS Tax Saver Fund?",
+            "What is the exit load on the Axis ELSS Tax Saver Fund?",
+            "What is the expense ratio of the Axis ELSS Direct plan?",
+            "How is the 80C tax benefit applied in the Axis ELSS Tax Saver Fund?",
+        ),
+    },
+    {
+        "scheme": "midcap",
+        "category": "Mid Cap",
+        "icon": "speed",
+        "tagline": "Mid-cap equity, direct plan and statutory SID.",
+        "starters": (
+            "What is the expense ratio of the Axis Midcap Direct plan?",
+            "What is the exit load on the Axis Midcap Fund?",
+            "What is the benchmark for the Axis Midcap Fund?",
+            "What is the minimum lump sum for the Axis Midcap Fund?",
+        ),
+    },
+    {
+        "scheme": "amc_wide",
+        "category": "AMC Factsheets",
+        "icon": "account_balance",
+        "tagline": "AMC factsheets, portfolio holdings and downloads.",
+        "starters": (
+            "What is the latest fund factsheet date for Axis Mutual Fund?",
+            "What is the portfolio holdings of Axis Mutual Fund?",
+            "Where can I download the statement for Axis Mutual Fund?",
+        ),
+    },
+)
 DOC_TYPES = (
     "scheme_page",
     "sid",

@@ -12,48 +12,202 @@
 </head>
 <body>
 
-<header class="topbar">
-  <div class="wrap topbar-inner">
-    <div class="brand">
-      <span class="brand-mark"><span class="material-symbols-outlined">verified</span></span>
-      <div class="brand-text">
-        <strong>Axis MF Facts Assistant</strong>
-        <span id="brand-sub">Grounded in official Axis Mutual Fund pages</span>
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar" aria-label="Workspace">
+    <div class="sidebar-inner">
+
+      <div class="side-head">
+        <span class="side-title">Workspace</span>
+        <button class="icon-btn side-close" id="sidebar-close" type="button" aria-label="Close panel">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
+
+      <button class="new-chat" id="new-chat" type="button">
+        <span class="material-symbols-outlined">add</span>
+        <span>New chat</span>
+      </button>
+
+      <div class="tabs" role="tablist" aria-label="Workspace sections">
+        <button class="tab is-active" id="tab-history" type="button" role="tab"
+                aria-selected="true" aria-controls="panel-history">
+          <span class="material-symbols-outlined">history</span>
+          <span>History</span>
+        </button>
+        <button class="tab" id="tab-about" type="button" role="tab"
+                aria-selected="false" aria-controls="panel-about">
+          <span class="material-symbols-outlined">verified_user</span>
+          <span>About</span>
+        </button>
+      </div>
+
+      <div class="tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-history">
+        <div class="side-note" id="history-note">Saved in this browser only.</div>
+        <ul class="hist-list" id="history-list"></ul>
+        <div class="hist-empty" id="history-empty">
+          <span class="material-symbols-outlined">history_toggle_off</span>
+          <p>Questions you ask show up here, with the answer and source.</p>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-about" role="tabpanel" aria-labelledby="tab-about" hidden>
+        <div class="about">
+          <h3>Facts only, never advice</h3>
+          <p id="about-disclaimer"></p>
+          <dl class="about-facts">
+            <div>
+              <dt>Grounded in</dt>
+              <dd>Official Axis MF pages and statutory documents</dd>
+            </div>
+            <div>
+              <dt>Follow-up memory</dt>
+              <dd id="about-memory">&mdash;</dd>
+            </div>
+            <div>
+              <dt>Forecasts or fund picks</dt>
+              <dd>Never returned</dd>
+            </div>
+          </dl>
+          <p class="about-foot">
+            History lives in this browser only. The running conversation is held
+            on the server for <span id="about-memory-2">&mdash;</span> messages, so a
+            cold restart starts a fresh context.
+          </p>
+        </div>
+      </div>
+
     </div>
-    <span class="pill pill-live" id="health-pill">checking</span>
+  </aside>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="content">
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open panel" aria-expanded="false">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="brand">
+          <span class="brand-mark">
+            <img src="/static/indmoney-ai-logo.png" alt="IND Money AI logo" width="36" height="36" />
+          </span>
+          <div class="brand-text">
+            <strong>IND Money AI</strong>
+            <span id="brand-sub">Your guide to Axis Mutual Fund facts</span>
+          </div>
+        </div>
+        <span class="pill pill-live" id="health-pill">checking</span>
+      </div>
+    </header>
+
+    <main class="wrap">
+
+      <section class="banner" aria-label="Guardrails and sourcing">
+        <div class="banner-left">
+          <span class="banner-icon"><span class="material-symbols-outlined">shield</span></span>
+          <div class="banner-text">
+            <strong>Facts only &middot; no investment advice</strong>
+            <span>Every answer is quoted from official Axis MF pages and statutory documents.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="disclaimer" id="disclaimer"></div>
+
+      <section id="stream" class="stream" aria-live="polite" aria-label="Conversation"></section>
+
+      <section class="explorer" id="explorer" aria-label="Browse Axis Mutual Fund categories">
+
+        <div class="hero">
+          <span class="hero-chip">
+            <span class="material-symbols-outlined">waving_hand</span>
+            <span>Hello! I'm IND Money AI.</span>
+          </span>
+          <h1 class="hero-title" id="hero-title">Where should we start?</h1>
+          <p class="hero-sub">
+            Pick a fund and I answer strictly from official Axis MF scheme pages,
+            SIDs and factsheets, with the source linked on every claim. If the
+            documents do not cover something, I say so instead of guessing.
+          </p>
+        </div>
+
+        <div class="filter-label">
+          <span class="material-symbols-outlined">filter_alt</span>
+          <span>Browse by fund</span>
+        </div>
+        <div class="pill-row" id="cat-pills"></div>
+
+        <article class="fund-card" id="fund-card" hidden>
+          <div class="fund-card-head">
+            <span class="fund-icon" id="fund-icon">
+              <span class="material-symbols-outlined">savings</span>
+            </span>
+            <div class="fund-card-title">
+              <div class="fund-name-row">
+                <h2 class="fund-name" id="fund-name"></h2>
+                <span class="pill pill-accent" id="fund-cat-pill"></span>
+              </div>
+              <p class="fund-tagline" id="fund-tagline"></p>
+            </div>
+          </div>
+
+          <div class="fund-meta">
+            <span class="filter-label">
+              <span class="material-symbols-outlined">verified</span>
+              <span>Backed by</span>
+            </span>
+            <div class="pill-row" id="fund-docs"></div>
+          </div>
+
+          <div class="filter-label">
+            <span class="material-symbols-outlined">tips_and_updates</span>
+            <span>Tap to ask</span>
+          </div>
+          <div class="pill-row" id="fund-starters"></div>
+        </article>
+
+        <div class="trust-row" id="trust-row">
+          <span class="trust-badge">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Official Axis MF sources only</span>
+          </span>
+          <span class="trust-badge">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Every answer cites its source</span>
+          </span>
+          <span class="trust-badge">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Facts, not investment advice</span>
+          </span>
+        </div>
+
+      </section>
+
+      <section class="suggestions" id="suggestions" aria-label="Suggested questions">
+        <div class="suggestions-label">
+          <span class="material-symbols-outlined">tips_and_updates</span>
+          <span>Suggested questions</span>
+        </div>
+        <div class="pill-row" id="suggestion-row"></div>
+      </section>
+
+    </main>
   </div>
-</header>
 
-<main class="wrap">
-
-  <section class="banner" aria-label="Guardrails and sourcing">
-    <div class="banner-left">
-      <span class="banner-icon"><span class="material-symbols-outlined">shield</span></span>
-      <div class="banner-text">
-        <strong>Facts only &middot; no investment advice</strong>
-        <span>Every answer is quoted from official Axis MF pages and statutory documents.</span>
-      </div>
-    </div>
-    <span class="pill" id="model-pill">&mdash;</span>
-  </section>
-
-  <div class="disclaimer" id="disclaimer"></div>
-
-  <section id="stream" class="stream" aria-live="polite" aria-label="Conversation"></section>
-
-  <section class="suggestions" id="suggestions" aria-label="Suggested questions">
-    <div class="suggestions-label">
-      <span class="material-symbols-outlined">tips_and_updates</span>
-      <span>Suggested questions</span>
-    </div>
-    <div class="pill-row" id="suggestion-row"></div>
-  </section>
-
-</main>
+</div>
 
 <div class="composer-dock">
   <form class="wrap" id="composer">
+    <div class="scope-bar" id="scope-bar" hidden>
+      <span class="scope-chip" id="scope-chip">
+        <span class="material-symbols-outlined" id="scope-icon">savings</span>
+        <span id="scope-label"></span>
+      </span>
+      <button class="scope-clear" id="scope-clear" type="button" aria-label="Clear fund context">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
     <div class="composer">
       <input id="chat-input" type="text" autocomplete="off" maxlength="2000"
              placeholder="Ask about exit loads, fees, risk or ELSS lock-in..." />

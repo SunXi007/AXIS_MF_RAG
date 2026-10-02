@@ -11,8 +11,10 @@ bounded in-process store because the pipeline already caps each window at
 from __future__ import annotations
 
 import re
+import threading
 import time
 from collections import OrderedDict
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +30,19 @@ from src.templates import DISCLAIMER
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 SESSION_ID_RE = re.compile(r"^[0-9a-f]{32}$")
 
-app = FastAPI(title="Axis MF RAG chatbot", docs_url=None, redoc_url=None)
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Start the model warm-up in the background, without delaying the boot.
+
+    Deliberately not awaited: Render needs the port open quickly to finish its
+    health checks, and blocking here would make a cold deploy look dead.
+    """
+    threading.Thread(target=warm_pipeline, name="warm", daemon=True).start()
+    yield
+
+
+app = FastAPI(title="Axis MF RAG chatbot", docs_url=None, redoc_url=None, lifespan=lifespan)
 
 
 class ChatRequest(BaseModel):
@@ -93,6 +107,8 @@ def check_session_id(session_id: str) -> str:
 
 
 _pipeline: dict[str, Any] = {}
+_pipeline_lock = threading.Lock()
+_warm: dict[str, str] = {"state": "cold", "error": ""}
 
 
 def get_pipeline() -> dict[str, Any]:
@@ -102,14 +118,45 @@ def get_pipeline() -> dict[str, Any]:
     happen per request on a small instance. Opening the collection here also
     validates the index up front, so a bad build fails on the first request
     rather than mid-answer.
-    """
-    if "embedder" not in _pipeline:
-        from src.embed import load_embedder
-        from src.retrieve import open_collection
 
-        _pipeline["embedder"] = load_embedder()
-        _pipeline["collection"] = open_collection()
+    The lock matters because a warm-up thread and the first user request race:
+    without it, both would load a second copy of the model and a 512 MB
+    instance would fall over.
+    """
+    if "embedder" in _pipeline:
+        return _pipeline
+    with _pipeline_lock:
+        if "embedder" not in _pipeline:
+            from src.embed import load_embedder
+            from src.retrieve import open_collection
+
+            _pipeline["embedder"] = load_embedder()
+            _pipeline["collection"] = open_collection()
     return _pipeline
+
+
+def warm_pipeline() -> None:
+    """Force the heavy imports and the model onto the instance, off the request path.
+
+    `Embedder` defers loading sentence-transformers and the MiniLM weights until
+    the first `encode`. Deferring that to the first `/api/chat` means the first
+    person to ask waits for it, on a 0.1 CPU instance, for tens of seconds. Doing
+    it on a background thread at startup overlaps the cost with Render's health
+    probes and with the user reading the page.
+
+    Failures are recorded, not raised: a cold container should still start and
+    serve the UI, and the first real request will retry and report the error.
+    """
+    if _warm["state"] == "ready":
+        return
+    _warm["state"] = "warming"
+    try:
+        get_pipeline()
+        _warm["state"] = "ready"
+        _warm["error"] = ""
+    except Exception as exc:  # noqa: BLE001 - surfaced through /api/health
+        _warm["state"] = "failed"
+        _warm["error"] = str(exc)
 
 
 def startup_report() -> tuple[bool, str]:
@@ -133,16 +180,48 @@ def health() -> dict[str, Any]:
         "threshold": config.SIMILARITY_THRESHOLD,
         "memory_window": config.MEMORY_MAX_MESSAGES,
         "sessions": len(sessions),
+        "pipeline": _warm["state"],
+        "pipeline_problem": _warm["error"],
     }
 
 
 @app.get("/api/config")
 def public_config() -> dict[str, Any]:
-    """Everything the frontend needs to render shell chrome."""
+    """Everything the frontend needs to render shell chrome.
+
+    The model name is deliberately absent: which LLM answers a question is an
+    implementation detail, and surfacing it in the product invites users to
+    judge a grounded answer by its vendor instead of its cited source. It stays
+    on `/api/health` for operators.
+    """
+    from src.chunk import SCHEME_TITLES
+    from src.sources import load_sources
+
+    # Derive the "backed by" chips from sources.csv instead of hardcoding them,
+    # so the UI can never advertise a document type the corpus does not hold.
+    doc_types: dict[str, list[str]] = {}
+    for source in load_sources():
+        if not source.enabled:
+            continue
+        doc_types.setdefault(source.scheme, []).append(source.doc_type)
+
+    categories = [
+        {
+            "scheme": entry["scheme"],
+            "title": SCHEME_TITLES.get(entry["scheme"], entry["scheme"]),
+            "category": entry["category"],
+            "icon": entry["icon"],
+            "tagline": entry["tagline"],
+            "starters": list(entry["starters"]),
+            "documents": sorted(set(doc_types.get(entry["scheme"], []))),
+        }
+        for entry in config.FUND_CATALOG
+    ]
+
     return {
         "disclaimer": DISCLAIMER,
-        "model": config.GROQ_MODEL,
         "memory_window": config.MEMORY_MAX_MESSAGES,
+        "categories": categories,
         "suggestions": [
             "What is the exit load on the Axis Large Cap Regular plan?",
             "What is the lock-in period for the Axis ELSS Tax Saver Fund?",
@@ -167,14 +246,6 @@ def chat(request: ChatRequest) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="question is empty")
 
     conversation = sessions.get(request.session_id)
-
-    ready, problem = startup_report()
-    if not ready:
-        raise HTTPException(status_code=503, detail=problem)
-
-    question = request.question.strip()
-    if not question:
-        raise HTTPException(status_code=400, detail="question is empty")
 
     try:
         pipeline = get_pipeline()

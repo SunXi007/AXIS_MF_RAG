@@ -6,6 +6,8 @@ stub so the API surface can be tested offline and in milliseconds.
 
 from __future__ import annotations
 
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -78,6 +80,24 @@ class TestHealth:
         assert body["ok"] is False
         assert body["problem"] == "no key"
 
+    def test_reports_pipeline_warm_state(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The embedder loads in the background, so /api/health must say where it got to.
+
+        A container used to report itself healthy while still cold, which hid the
+        real cause of a slow first answer.
+        """
+        monkeypatch.setitem(server._warm, "state", "warming")
+        body = client.get("/api/health").json()
+        assert body["pipeline"] == "warming"
+
+        monkeypatch.setitem(server._warm, "state", "failed")
+        monkeypatch.setitem(server._warm, "error", "no weights")
+        body = client.get("/api/health").json()
+        assert body["pipeline"] == "failed"
+        assert body["pipeline_problem"] == "no weights"
+
 
 class TestStaticShell:
     def test_index_is_served(self, client: TestClient) -> None:
@@ -97,6 +117,171 @@ class TestStaticShell:
         body = client.get("/api/config").json()
         assert "advice" in body["disclaimer"].lower()
         assert len(body["suggestions"]) >= 3
+
+    def test_config_never_exposes_the_model_name(self, client: TestClient) -> None:
+        """Which LLM answers is an implementation detail, not product copy.
+
+        Guarded because it is easy to reintroduce by adding one key to the
+        frontend payload, and the model name is not something a mutual fund
+        facts assistant should ask users to judge an answer by.
+        """
+        body = client.get("/api/config").json()
+        assert "model" not in body
+        assert config.GROQ_MODEL not in json.dumps(body)
+
+    def test_index_ships_a_history_tab(self, client: TestClient) -> None:
+        html = client.get("/").text
+        assert 'id="panel-history"' in html
+        assert 'id="history-list"' in html
+        assert "model-pill" not in html
+
+    def test_config_carries_the_fund_catalogue(self, client: TestClient) -> None:
+        """The category browser must only offer schemes we can actually answer.
+
+        A card backed by nothing in sources.csv returns NOT_FOUND, which reads as a
+        broken bot rather than an honest gap.
+        """
+        body = client.get("/api/config").json()
+        categories = body["categories"]
+        assert categories
+
+        from src.chunk import SCHEME_TITLES
+
+        schemes = [category["scheme"] for category in categories]
+        assert schemes == list(config.SCHEMES)
+        assert set(schemes) <= set(SCHEME_TITLES)
+
+        for category in categories:
+            assert category["title"] == SCHEME_TITLES[category["scheme"]]
+            assert category["icon"]
+            assert category["category"]
+            assert category["tagline"]
+            assert category["starters"]
+            assert category["documents"]
+            for starter in category["starters"]:
+                assert starter.endswith("?")
+
+    def test_category_documents_match_the_corpus(self, client: TestClient) -> None:
+        """The "Backed by" chips are derived from sources.csv, so they must match.
+
+        A chip promising a factsheet we never ingested is a small lie the user
+        only discovers after asking a question that cannot be answered.
+        """
+        from src.sources import load_sources
+
+        expected: dict[str, set[str]] = {}
+        for source in load_sources():
+            if source.enabled:
+                expected.setdefault(source.scheme, set()).add(source.doc_type)
+
+        for category in client.get("/api/config").json()["categories"]:
+            assert set(category["documents"]) == expected[category["scheme"]]
+
+    def test_every_starter_resolves_to_a_real_scheme(self, client: TestClient) -> None:
+        """Each starter must name a scheme the retriever can filter on."""
+        from src.retrieve import infer_scheme
+
+        body = client.get("/api/config").json()
+        for category in body["categories"]:
+            for starter in category["starters"]:
+                if category["scheme"] == "amc_wide":
+                    continue
+                assert infer_scheme(starter) == category["scheme"], starter
+
+    def test_index_ships_the_greeting_and_category_browser(
+        self, client: TestClient
+    ) -> None:
+        html = client.get("/").text
+        assert "Hello!" in html
+        assert "IND Money AI" in html
+        assert "/static/indmoney-ai-logo.png" in html
+        assert 'id="cat-pills"' in html
+        assert 'id="fund-card"' in html
+        assert 'id="fund-docs"' in html
+        assert 'id="trust-row"' in html
+        assert 'id="scope-bar"' in html
+        # DESIGN.md forbids fake regulatory markers, so no SEBI number ships.
+        assert "SEBI" not in html
+
+
+class TestWarmUp:
+    def test_records_success_and_runs_once(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setitem(server._warm, "state", "cold")
+        monkeypatch.setitem(server._warm, "error", "")
+        calls: list[int] = []
+
+        def fake_get() -> dict[str, object]:
+            calls.append(1)
+            return {"embedder": object()}
+
+        monkeypatch.setattr(server, "get_pipeline", fake_get)
+
+        server.warm_pipeline()
+        server.warm_pipeline()
+
+        assert calls == [1]
+        assert server._warm["state"] == "ready"
+        assert server._warm["error"] == ""
+
+    def test_records_failure_without_raising(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setitem(server._warm, "state", "cold")
+
+        def boom() -> dict[str, object]:
+            raise RuntimeError("no weights")
+
+        monkeypatch.setattr(server, "get_pipeline", boom)
+
+        server.warm_pipeline()
+
+        assert server._warm["state"] == "failed"
+        assert "no weights" in server._warm["error"]
+
+    def test_concurrent_callers_load_the_model_once(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The warm-up thread and the first request must not both load MiniLM.
+
+        The lock in get_pipeline is load-bearing, not defensive: two copies of the
+        encoder do not fit in the free tier's 512 MB.
+        """
+        import threading
+        import time
+
+        import src.embed as embed_module
+        import src.retrieve as retrieve_module
+
+        server._pipeline.clear()
+        monkeypatch.setitem(server._warm, "state", "cold")
+
+        loads: list[int] = []
+        counter_lock = threading.Lock()
+
+        def fake_load() -> object:
+            with counter_lock:
+                loads.append(1)
+            time.sleep(0.4)
+            return "embedder"
+
+        monkeypatch.setattr(embed_module, "load_embedder", fake_load)
+        monkeypatch.setattr(retrieve_module, "open_collection", lambda: "collection")
+
+        try:
+            threads = [
+                threading.Thread(target=server.get_pipeline) for _ in range(4)
+            ]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join(timeout=10)
+
+            assert len(loads) == 1
+            assert "embedder" in server._pipeline
+        finally:
+            server._pipeline.clear()
 
 
 class TestChat:
