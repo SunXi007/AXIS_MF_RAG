@@ -13,6 +13,14 @@ pytest==9.1.1
 chromadb==1.5.9
 sentence-transformers==6.1.0
 tqdm==4.70.1
+# sentence-transformers declares `torch>=2.2` as a hard requirement, but torch did
+# not appear in a clean Linux `pip install` (it was only present in a local venv
+# that had been created earlier), so it is pinned explicitly rather than left to
+# the resolver. On Render, install the CPU wheel first:
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+# A `2.14.1+cpu` install satisfies this `==2.14.1` pin, so pip skips the ~2 GB
+# CUDA default build.
+torch==2.14.1
 
 # P5 - generation
 groq==1.7.0

@@ -1,0 +1,47 @@
+# Render Blueprint for the Axis MF RAG chatbot.
+#
+# Root Directory is deliberately omitted. Render defaults it to the repo root,
+# which is required: every path in config.py resolves from ROOT_DIR, and the
+# build runs `python -m src.ingest`. Setting rootDir to `src` makes that module
+# unimportable and fails the build with "No module named src.ingest".
+
+services:
+  - type: web
+    name: axis-mf-rag
+    runtime: python
+
+    # The free tier's 512 MB cannot hold torch + chromadb while embedding 5,415
+    # chunks; the build gets OOM-killed and Render reports only "Build failed".
+    plan: starter
+
+    buildCommand: >-
+      pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+      && pip install -r requirements.txt
+      && python -m src.ingest
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    healthCheckPath: /_stcore/health
+
+    autoDeploy: true
+
+    envVars:
+      # cp312 matches the manylinux wheels in the build log.
+      - key: PYTHON_VERSION
+        value: 3.12.8
+
+      # llama-3.1-8b-instant, named in docs/implementation.md, is retired from
+      # the Groq catalogue and 404s. gpt-oss-20b is the working substitute.
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+
+      # sync: false prompts for the value in the Render dashboard and keeps it
+      # out of this file. Do not put the key in here.
+      - key: GROQ_API_KEY
+        sync: false
+
+      # Left at config.py defaults on purpose; uncomment to override.
+      # - key: AXIS_TOP_K
+      #   value: "12"
+      # - key: AXIS_SIMILARITY_THRESHOLD
+      #   value: "0.53"
+      # - key: AXIS_MEMORY_MAX_MESSAGES
+      #   value: "10"
